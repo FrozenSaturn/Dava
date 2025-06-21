@@ -124,28 +124,6 @@ const FindDoctorsTile = ({
             ))}
           </div>
 
-          {/* Quick Stats */}
-          <div className="grid grid-cols-3 gap-3 pt-3 border-t border-[#388E3C]/20">
-            <div className="text-center">
-              <div className="text-lg font-sf-pro-bold text-[#388E3C]">24</div>
-              <div className="text-xs text-[#FAFAFA]/60 font-sf-pro-regular">
-                Available
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-sf-pro-bold text-[#388E3C]">4.8</div>
-              <div className="text-xs text-[#FAFAFA]/60 font-sf-pro-regular">
-                Avg Rating
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-sf-pro-bold text-[#388E3C]">12</div>
-              <div className="text-xs text-[#FAFAFA]/60 font-sf-pro-regular">
-                Specialties
-              </div>
-            </div>
-          </div>
-
           {/* Quick Search Categories */}
           <div className="space-y-2 pt-4 border-t border-[#388E3C]/20">
             <div className="text-xs text-[#FAFAFA]/60 font-sf-pro-medium uppercase tracking-wide">
