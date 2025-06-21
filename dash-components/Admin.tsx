@@ -35,7 +35,7 @@ const AdminPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-6 min-h-screen">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">
@@ -72,42 +72,61 @@ const AdminPage = () => {
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
-        className="space-y-6"
+        className="space-y-6 flex-1"
       >
-        <TabsList className="grid w-full grid-cols-4 bg-secondary/50">
-          <TabsTrigger value="profile" className="flex items-center space-x-2">
-            <Users className="h-4 w-4" />
+        {/* Horizontal Tabs List */}
+        <TabsList className="inline-flex h-12 items-center justify-start rounded-lg bg-secondary/50 p-1 text-muted-foreground w-auto">
+          <TabsTrigger
+            value="profile"
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm mr-1"
+          >
+            <Users className="h-4 w-4 mr-2" />
             <span>Profile</span>
           </TabsTrigger>
-          <TabsTrigger value="roles" className="flex items-center space-x-2">
-            <Shield className="h-4 w-4" />
+
+          <TabsTrigger
+            value="roles"
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm mr-1"
+          >
+            <Shield className="h-4 w-4 mr-2" />
             <span>Role Verification</span>
           </TabsTrigger>
+
           <TabsTrigger
             value="appointments"
-            className="flex items-center space-x-2"
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm mr-1"
           >
-            <Calendar className="h-4 w-4" />
+            <Calendar className="h-4 w-4 mr-2" />
             <span>Appointments</span>
           </TabsTrigger>
-          <TabsTrigger value="payments" className="flex items-center space-x-2">
-            <CreditCard className="h-4 w-4" />
+
+          <TabsTrigger
+            value="payments"
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+          >
+            <CreditCard className="h-4 w-4 mr-2" />
             <span>Payments</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="profile">
-          <AdminProfileBento />
-        </TabsContent>
-        <TabsContent value="roles">
-          <RoleVerification />
-        </TabsContent>
-        <TabsContent value="appointments">
-          <AppointmentManagement />
-        </TabsContent>
-        <TabsContent value="payments">
-          <PaymentTracking />
-        </TabsContent>
+        {/* Equal spacing between tab content areas */}
+        <div className="space-y-6">
+          <TabsContent value="profile" className="mt-6">
+            <AdminProfileBento />
+          </TabsContent>
+
+          <TabsContent value="roles" className="mt-6">
+            <RoleVerification />
+          </TabsContent>
+
+          <TabsContent value="appointments" className="mt-6">
+            <AppointmentManagement />
+          </TabsContent>
+
+          <TabsContent value="payments" className="mt-6">
+            <PaymentTracking />
+          </TabsContent>
+        </div>
       </Tabs>
     </div>
   );

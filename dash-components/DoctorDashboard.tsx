@@ -52,20 +52,29 @@ const DoctorDashboard = () => {
         onValueChange={handleTabChange}
         className="space-y-6 flex-1"
       >
-        <TabsList className="grid w-full grid-cols-3 bg-secondary/50">
-          <TabsTrigger value="profile" className="flex items-center space-x-2">
-            <User className="h-4 w-4" />
+        {/* Horizontal Tabs List */}
+        <TabsList className="inline-flex h-12 items-center justify-start rounded-lg bg-secondary/50 p-1 text-muted-foreground w-auto">
+          <TabsTrigger
+            value="profile"
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm mr-1"
+          >
+            <User className="h-4 w-4 mr-2" />
             <span>Profile</span>
           </TabsTrigger>
-          <TabsTrigger value="queue" className="flex items-center space-x-2">
-            <Calendar className="h-4 w-4" />
+
+          <TabsTrigger
+            value="queue"
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm mr-1"
+          >
+            <Calendar className="h-4 w-4 mr-2" />
             <span>Appointment Queue</span>
           </TabsTrigger>
+
           <TabsTrigger
             value="diagnosis"
-            className="flex items-center space-x-2"
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
           >
-            <FileText className="h-4 w-4" />
+            <FileText className="h-4 w-4 mr-2" />
             <span>Submit Diagnosis</span>
           </TabsTrigger>
         </TabsList>

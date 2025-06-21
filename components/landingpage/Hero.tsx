@@ -19,9 +19,12 @@ export default function Hero() {
       <div className="relative h-full w-full flex flex-col items-center justify-center">
         <div className="container mx-auto px-6 text-center">
           {/* Main heading */}
-          <h1 className="font-sf-pro-regular text-6xl lg:text-8xl font-bold mb-8 text-[#FAFAFA] tracking-tight leading-tight tracking-tight">
-            Trust Without Compromise
+          <h1 className="font-sf-pro text-5xl lg:text-8xl font-bold mb-1 text-[#FAFAFA] tracking-widest leading-tight">
+            The DAVA Project
           </h1>
+          <p className="text-lg text-gray-300 mb-5 font-sf-pro-regular tracking-widest">
+            (not your grandma's healthcare)
+          </p>
 
           {/* CTA Button */}
           <Link href="/dashboard" passHref>
