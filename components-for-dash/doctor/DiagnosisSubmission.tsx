@@ -21,6 +21,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
+import { useWriteContract } from "wagmi";
+import { CONTRACT_ABI, CONTRACT_ADDRESS } from "@/lib/contracts";
 
 interface Appointment {
   id: string;
@@ -149,6 +151,8 @@ export function DiagnosisSubmission() {
     }
   };
 
+  const { writeContractAsync } = useWriteContract();
+
   const handleTransferToAdmin = async () => {
     if (
       !selectedAppointment ||
@@ -164,34 +168,14 @@ export function DiagnosisSubmission() {
       return;
     }
 
-    setIsTransferring(true);
-    try {
-      const supabase = createClient();
-      const newRecord = {
-        appointment_id: selectedAppointment,
-        patient_wallet_address: appointmentDetails.patient_wallet_address,
-        doctor_wallet_address: appointmentDetails.doctor_wallet_address,
-        diagnosis: diagnosis,
-        treatment: treatmentPlan,
-        token_uri: tokenUri,
-      };
+    const txHash = await writeContractAsync({
+      address: CONTRACT_ADDRESS,
+      abi: CONTRACT_ABI,
+      functionName: "mintNFT",
+      args: [appointmentDetails.patient_wallet_address, tokenUri],
+    });
 
-      const { error } = await supabase
-        .from("medical_records_nfts")
-        .insert([newRecord]);
-
-      if (error) {
-        throw error;
-      }
-
-      alert("Record transferred to admin successfully!");
-      // Optionally, reset the form here
-    } catch (error) {
-      console.error("Error transferring record to admin:", error);
-      alert("Failed to transfer record. Please try again.");
-    } finally {
-      setIsTransferring(false);
-    }
+    console.log("Mint transaction hash:", txHash);
   };
 
   return (

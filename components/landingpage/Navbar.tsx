@@ -35,7 +35,6 @@ const Navbar = () => {
     { name: "Features", link: "#features" },
     { name: "Timeline", link: "#timeline" },
     { name: "Contribute", link: "#contribute" },
-    { name: "About", link: "#about" },
   ];
 
   return (
@@ -76,17 +75,19 @@ const Navbar = () => {
         </Link>
 
         {/* Navigation Items */}
-        {navItems.map((navItem, idx) => (
-          <a
-            key={`link=${idx}`}
-            href={navItem.link}
-            className={cn(
-              "relative text-[#FAFAFA]/80 items-center flex space-x-1 hover:text-[#388E3C] transition-colors duration-200 font-sf-pro-regular text-sm"
-            )}
-          >
-            <span className="text-sm">{navItem.name}</span>
-          </a>
-        ))}
+        <div className="flex items-center space-x-6">
+          {navItems.map((navItem, idx) => (
+            <a
+              key={`link=${idx}`}
+              href={navItem.link}
+              className={cn(
+                "relative text-[#FAFAFA]/80 items-center flex space-x-1 hover:text-[#388E3C] transition-colors duration-200 font-sf-pro-regular text-sm"
+              )}
+            >
+              <span className="text-sm">{navItem.name}</span>
+            </a>
+          ))}
+        </div>
 
         {/* CTA Button */}
         <Link href="/dashboard" passHref>
