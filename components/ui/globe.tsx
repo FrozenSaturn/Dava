@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { Color, Scene, Fog, PerspectiveCamera, Vector3 } from "three";
+import { Color, Scene, Fog, PerspectiveCamera, Vector3, Group } from "three";
 import ThreeGlobe from "three-globe";
 import { useThree, Canvas, extend } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import countries from "@/data/globe.json";
+import countries from "./data/globe.json";
+
 declare module "@react-three/fiber" {
   interface ThreeElements {
     threeGlobe: ThreeElements["mesh"] & {
@@ -64,7 +65,7 @@ let numbersOfRings = [0];
 
 export function Globe({ globeConfig, data }: WorldProps) {
   const globeRef = useRef<ThreeGlobe | null>(null);
-  const groupRef = useRef();
+  const groupRef = useRef<Group | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
   const defaultProps = {
@@ -248,6 +249,20 @@ export function WebGLRendererConfig() {
 
 export function World(props: WorldProps) {
   const { globeConfig } = props;
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-black/30 rounded-2xl">
+        <div className="text-[#388E3C] text-lg">Loading Globe...</div>
+      </div>
+    );
+  }
+
   const scene = new Scene();
   scene.fog = new Fog(0xffffff, 400, 2000);
   return (
@@ -306,4 +321,22 @@ export function genRandomNumbers(min: number, max: number, count: number) {
   }
 
   return arr;
+}
+
+export function ClientOnlyWorld(props: WorldProps) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-black/30 rounded-2xl">
+        <div className="text-[#388E3C] text-lg">Loading Globe...</div>
+      </div>
+    );
+  }
+
+  return <World {...props} />;
 }

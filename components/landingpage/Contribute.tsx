@@ -6,6 +6,7 @@ import { cn } from "../../lib/utils";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { CardSpotlight } from "../../components/ui/card-spotlight";
+import { World } from "../../components/ui/globe";
 
 // Import Lucide icons
 import {
