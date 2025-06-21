@@ -1,294 +1,329 @@
 "use client";
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FileText, Upload, Save } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
 
-const DiagnosisSubmission = () => {
-  const [selectedAppointment, setSelectedAppointment] = useState('');
-  const [diagnosisData, setDiagnosisData] = useState({
-    symptoms: '',
-    diagnosis: '',
-    treatmentPlan: '',
-    medications: '',
-    followUpInstructions: '',
-    severity: '',
-    notes: ''
-  });
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+import * as React from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { createClient } from "@/lib/supabase/client";
 
-  // TODO: Fetch appointments requiring diagnosis from Supabase
-  const pendingAppointments = [
-    {
-      id: 'APT003',
-      bookingId: 'BK-2024-003',
-      patient: 'Michael Johnson',
-      date: '2024-01-20',
-      time: '2:00 PM',
-      reason: 'Chest pain evaluation'
-    },
-    {
-      id: 'APT005',
-      bookingId: 'BK-2024-005',
-      patient: 'Sarah Davis',
-      date: '2024-01-19',
-      time: '3:30 PM',
-      reason: 'Heart palpitations'
+interface Appointment {
+  id: string;
+}
+
+interface AppointmentDetails {
+  id: string;
+  patient_id: string;
+  doctor_id: string;
+  appointment_date: string;
+  consultation_fee: number;
+  patient_full_name?: string | null;
+  patient_wallet_address?: string | null;
+  doctor_full_name?: string | null;
+  doctor_wallet_address?: string | null;
+}
+
+export function DiagnosisSubmission() {
+  const [selectedAppointment, setSelectedAppointment] = React.useState("");
+  const [appointments, setAppointments] = React.useState<Appointment[]>([]);
+  const [appointmentDetails, setAppointmentDetails] =
+    React.useState<AppointmentDetails | null>(null);
+  const [isLoadingDetails, setIsLoadingDetails] = React.useState(false);
+  const [diagnosis, setDiagnosis] = React.useState("");
+  const [treatmentPlan, setTreatmentPlan] = React.useState("");
+  const [file, setFile] = React.useState<File | null>(null);
+  const [tokenUri, setTokenUri] = React.useState<string | null>(null);
+  const [isUploading, setIsUploading] = React.useState(false);
+  const [isTransferring, setIsTransferring] = React.useState(false);
+
+  React.useEffect(() => {
+    const fetchAppointments = async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase.from("appointments").select("id");
+
+      if (error) {
+        console.error("Error fetching appointments:", error);
+      } else {
+        setAppointments(data as Appointment[]);
+      }
+    };
+
+    fetchAppointments();
+  }, []);
+
+  React.useEffect(() => {
+    const fetchAppointmentDetails = async () => {
+      if (selectedAppointment) {
+        setIsLoadingDetails(true);
+        setAppointmentDetails(null);
+        const supabase = createClient();
+        const { data: apptData, error: apptError } = await supabase
+          .from("appointments")
+          .select(
+            "id, patient_id, doctor_id, appointment_date, consultation_fee"
+          )
+          .eq("id", selectedAppointment)
+          .single();
+
+        if (apptError) {
+          console.error("Error fetching appointment details:", apptError);
+          setIsLoadingDetails(false);
+          return;
+        }
+
+        const { patient_id, doctor_id } = apptData;
+
+        const { data: profilesData, error: profilesError } = await supabase
+          .from("profiles")
+          .select('id, full_name, "walletAddress"')
+          .in("id", [patient_id, doctor_id]);
+
+        if (profilesError) {
+          console.error("Error fetching profiles:", profilesError);
+          setAppointmentDetails(apptData);
+        } else {
+          const patientProfile = profilesData.find((p) => p.id === patient_id);
+          const doctorProfile = profilesData.find((p) => p.id === doctor_id);
+
+          setAppointmentDetails({
+            ...apptData,
+            patient_full_name: patientProfile?.full_name,
+            patient_wallet_address: patientProfile?.walletAddress,
+            doctor_full_name: doctorProfile?.full_name,
+            doctor_wallet_address: doctorProfile?.walletAddress,
+          });
+        }
+        setIsLoadingDetails(false);
+      } else {
+        setAppointmentDetails(null);
+      }
+    };
+
+    fetchAppointmentDetails();
+  }, [selectedAppointment]);
+
+  const handleUpload = async () => {
+    if (!file) {
+      alert("Please select a file to upload.");
+      return;
     }
-  ];
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Upload failed");
+      }
+
+      const url = result.tokenUri;
+      setTokenUri(url);
+      console.log("File uploaded successfully. Token URI:", url);
+    } catch (error) {
+      console.error("Upload failed:", error);
+      alert("File upload failed. Please try again.");
+    } finally {
+      setIsUploading(false);
     }
   };
 
-  const handleSubmitDiagnosis = async () => {
-    if (!selectedAppointment || !diagnosisData.diagnosis) {
-      toast({
-        title: "Missing Information",
-        description: "Please select an appointment and provide a diagnosis.",
-        variant: "destructive"
-      });
+  const handleTransferToAdmin = async () => {
+    if (
+      !selectedAppointment ||
+      !appointmentDetails?.patient_wallet_address ||
+      !appointmentDetails?.doctor_wallet_address ||
+      !diagnosis ||
+      !treatmentPlan ||
+      !tokenUri
+    ) {
+      alert(
+        "Please ensure an appointment is selected, all details are loaded, diagnosis and treatment are filled, and the file is uploaded."
+      );
       return;
     }
 
+    setIsTransferring(true);
     try {
-      let ipfsHash = null;
-      
-      // TODO: Upload PDF report to IPFS if file is selected
-      if (selectedFile) {
-        // ipfsHash = await uploadToIPFS(selectedFile);
-        console.log('Uploading file to IPFS:', selectedFile.name);
+      const supabase = createClient();
+      const newRecord = {
+        appointment_id: selectedAppointment,
+        patient_wallet_address: appointmentDetails.patient_wallet_address,
+        doctor_wallet_address: appointmentDetails.doctor_wallet_address,
+        diagnosis: diagnosis,
+        treatment: treatmentPlan,
+        token_uri: tokenUri,
+      };
+
+      const { error } = await supabase
+        .from("medical_records_nfts")
+        .insert([newRecord]);
+
+      if (error) {
+        throw error;
       }
 
-      // TODO: Save diagnosis to Supabase
-      // const { error } = await supabase
-      //   .from('diagnoses')
-      //   .insert({
-      //     appointment_id: selectedAppointment,
-      //     doctor_id: user.id,
-      //     symptoms: diagnosisData.symptoms,
-      //     diagnosis: diagnosisData.diagnosis,
-      //     treatment_plan: diagnosisData.treatmentPlan,
-      //     medications: diagnosisData.medications,
-      //     follow_up_instructions: diagnosisData.followUpInstructions,
-      //     severity: diagnosisData.severity,
-      //     notes: diagnosisData.notes,
-      //     report_ipfs_hash: ipfsHash,
-      //     created_at: new Date().toISOString()
-      //   });
-
-      // TODO: Update appointment status
-      // await supabase
-      //   .from('appointments')
-      //   .update({ status: 'diagnosis_completed' })
-      //   .eq('id', selectedAppointment);
-
-      toast({
-        title: "Diagnosis Submitted",
-        description: "Diagnosis has been submitted and patient has been notified.",
-      });
-
-      // Reset form
-      setSelectedAppointment('');
-      setDiagnosisData({
-        symptoms: '',
-        diagnosis: '',
-        treatmentPlan: '',
-        medications: '',
-        followUpInstructions: '',
-        severity: '',
-        notes: ''
-      });
-      setSelectedFile(null);
-
+      alert("Record transferred to admin successfully!");
+      // Optionally, reset the form here
     } catch (error) {
-      toast({
-        title: "Submission Failed",
-        description: "There was an error submitting the diagnosis. Please try again.",
-        variant: "destructive"
-      });
+      console.error("Error transferring record to admin:", error);
+      alert("Failed to transfer record. Please try again.");
+    } finally {
+      setIsTransferring(false);
     }
   };
 
-  const selectedAppointmentData = pendingAppointments.find(apt => apt.id === selectedAppointment);
-
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <FileText className="h-5 w-5" />
-            <span>Submit Diagnosis</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div>
+    <Card className="w-full max-w-2xl mx-auto">
+      <CardHeader>
+        <CardTitle>Diagnosis and Treatment Plan</CardTitle>
+        <CardDescription>
+          Select an appointment, provide diagnosis and treatment, and upload any
+          relevant files.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form className="grid w-full items-center gap-4">
+          <div className="flex flex-col space-y-1.5">
             <Label htmlFor="appointment">Select Appointment</Label>
-            <Select value={selectedAppointment} onValueChange={setSelectedAppointment}>
-              <SelectTrigger>
-                <SelectValue placeholder="Choose an appointment requiring diagnosis" />
+            <Select
+              onValueChange={setSelectedAppointment}
+              value={selectedAppointment}
+            >
+              <SelectTrigger id="appointment">
+                <SelectValue placeholder="Select an appointment" />
               </SelectTrigger>
               <SelectContent>
-                {pendingAppointments.map(appointment => (
+                {appointments.map((appointment) => (
                   <SelectItem key={appointment.id} value={appointment.id}>
-                    {appointment.patient} - {appointment.date} at {appointment.time} ({appointment.bookingId})
+                    {appointment.id}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          {selectedAppointmentData && (
-            <Card className="bg-blue-50">
-              <CardContent className="p-4">
-                <h4 className="font-semibold mb-2">Appointment Details</h4>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p><strong>Patient:</strong> {selectedAppointmentData.patient}</p>
-                    <p><strong>Date:</strong> {selectedAppointmentData.date}</p>
-                    <p><strong>Time:</strong> {selectedAppointmentData.time}</p>
-                  </div>
-                  <div>
-                    <p><strong>Booking ID:</strong> {selectedAppointmentData.bookingId}</p>
-                    <p><strong>Reason:</strong> {selectedAppointmentData.reason}</p>
-                  </div>
+          {isLoadingDetails && (
+            <p className="text-sm text-muted-foreground">Loading details...</p>
+          )}
+
+          {appointmentDetails && !isLoadingDetails && (
+            <Card className="bg-muted/40">
+              <CardHeader>
+                <CardTitle className="text-lg">Appointment Details</CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
+                <div className="flex flex-col col-span-2">
+                  <span className="font-semibold">Patient:</span>
+                  <span>{appointmentDetails.patient_full_name || "N/A"}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {appointmentDetails.patient_wallet_address ||
+                      "No wallet address"}
+                  </span>
+                </div>
+                <div className="flex flex-col col-span-2">
+                  <span className="font-semibold">Doctor:</span>
+                  <span>{appointmentDetails.doctor_full_name || "N/A"}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {appointmentDetails.doctor_wallet_address ||
+                      "No wallet address"}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-semibold">Appointment Date:</span>
+                  <span>
+                    {new Date(
+                      appointmentDetails.appointment_date
+                    ).toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-semibold">Consultation Fee:</span>
+                  <span>${appointmentDetails.consultation_fee}</span>
                 </div>
               </CardContent>
             </Card>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="symptoms">Patient Symptoms</Label>
-                <Textarea
-                  id="symptoms"
-                  value={diagnosisData.symptoms}
-                  onChange={(e) => setDiagnosisData({...diagnosisData, symptoms: e.target.value})}
-                  placeholder="Document the symptoms observed during examination..."
-                  rows={3}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="diagnosis">Primary Diagnosis *</Label>
-                <Textarea
-                  id="diagnosis"
-                  value={diagnosisData.diagnosis}
-                  onChange={(e) => setDiagnosisData({...diagnosisData, diagnosis: e.target.value})}
-                  placeholder="Primary diagnosis and any secondary conditions..."
-                  rows={3}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="severity">Severity Level</Label>
-                <Select 
-                  value={diagnosisData.severity} 
-                  onValueChange={(value) => setDiagnosisData({...diagnosisData, severity: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select severity" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="mild">Mild</SelectItem>
-                    <SelectItem value="moderate">Moderate</SelectItem>
-                    <SelectItem value="severe">Severe</SelectItem>
-                    <SelectItem value="critical">Critical</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="treatment">Treatment Plan</Label>
-                <Textarea
-                  id="treatment"
-                  value={diagnosisData.treatmentPlan}
-                  onChange={(e) => setDiagnosisData({...diagnosisData, treatmentPlan: e.target.value})}
-                  placeholder="Detailed treatment plan and recommended procedures..."
-                  rows={3}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="medications">Medications</Label>
-                <Textarea
-                  id="medications"
-                  value={diagnosisData.medications}
-                  onChange={(e) => setDiagnosisData({...diagnosisData, medications: e.target.value})}
-                  placeholder="Prescribed medications with dosage and frequency..."
-                  rows={3}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="followup">Follow-up Instructions</Label>
-                <Textarea
-                  id="followup"
-                  value={diagnosisData.followUpInstructions}
-                  onChange={(e) => setDiagnosisData({...diagnosisData, followUpInstructions: e.target.value})}
-                  placeholder="Next appointment schedule and care instructions..."
-                  rows={3}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="notes">Additional Notes</Label>
+          <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="diagnosis">Diagnosis</Label>
             <Textarea
-              id="notes"
-              value={diagnosisData.notes}
-              onChange={(e) => setDiagnosisData({...diagnosisData, notes: e.target.value})}
-              placeholder="Any additional observations or recommendations..."
-              rows={2}
+              id="diagnosis"
+              placeholder="Enter diagnosis here..."
+              value={diagnosis}
+              onChange={(e) => setDiagnosis(e.target.value)}
+              rows={4}
             />
           </div>
-
-          <div className="border-t pt-4">
-            <Label htmlFor="report">Upload Diagnosis Report (PDF)</Label>
+          <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="treatment">Treatment Plan</Label>
+            <Textarea
+              id="treatment"
+              placeholder="Enter treatment plan here..."
+              value={treatmentPlan}
+              onChange={(e) => setTreatmentPlan(e.target.value)}
+              rows={4}
+            />
+          </div>
+          <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="file">Upload File</Label>
             <Input
-              id="report"
+              id="file"
               type="file"
-              accept=".pdf"
-              onChange={handleFileSelect}
-              className="mt-2"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
             />
-            {selectedFile && (
-              <p className="text-sm text-gray-600 mt-2 flex items-center space-x-2">
-                <Upload className="h-4 w-4" />
-                <span>{selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB) asd</span>
+          </div>
+          {tokenUri && (
+            <div className="mt-2 text-sm text-green-600">
+              <p>File uploaded successfully!</p>
+              <p>
+                URL:{" "}
+                <a
+                  href={tokenUri}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline break-all"
+                >
+                  {tokenUri}
+                </a>
               </p>
-            )}
-            <p className="text-xs text-gray-500 mt-1">
-              Report will be uploaded to IPFS for secure, decentralized storage
-            </p>
-          </div>
-
-          <div className="flex space-x-4">
-            <Button variant="outline" className="flex-1">
-              <Save className="h-4 w-4 mr-2" />
-              Save Draft
-            </Button>
-            <Button onClick={handleSubmitDiagnosis} className="flex-1">
-              <FileText className="h-4 w-4 mr-2" />
-              Submit Diagnosis
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+            </div>
+          )}
+        </form>
+      </CardContent>
+      <CardFooter className="flex justify-end space-x-2">
+        <Button onClick={handleUpload} disabled={isUploading || !file}>
+          {isUploading ? "Uploading..." : "Upload File"}
+        </Button>
+        <Button
+          onClick={handleTransferToAdmin}
+          disabled={isTransferring || !tokenUri}
+          variant="secondary"
+        >
+          {isTransferring ? "Transferring..." : "Transfer to Admin"}
+        </Button>
+      </CardFooter>
+    </Card>
   );
-};
-
-export default DiagnosisSubmission;
+}

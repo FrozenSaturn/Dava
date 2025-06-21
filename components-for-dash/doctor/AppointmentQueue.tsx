@@ -308,17 +308,46 @@ const AppointmentQueue = () => {
   }, []);
 
   const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      booked: { label: "Scheduled", variant: "secondary" },
-      awaiting_diagnosis: { label: "Needs Diagnosis", variant: "destructive" },
-      completed: { label: "Completed", variant: "outline" },
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig] || {
-      label: status,
-      variant: "secondary",
-    };
-    return <Badge variant={config.variant as any}>{config.label}</Badge>;
+    switch (status.toLowerCase()) {
+      case "completed":
+        return (
+          <Badge
+            variant="default"
+            className="bg-green-600/20 text-green-400 border-green-600/30 hover:bg-green-600/30"
+          >
+            Completed
+          </Badge>
+        );
+      case "awaiting_diagnosis":
+        return (
+          <Badge
+            variant="default"
+            className="bg-yellow-600/20 text-yellow-400 border-yellow-600/30 hover:bg-yellow-600/30"
+          >
+            Awaiting Diagnosis
+          </Badge>
+        );
+      case "booked":
+        return (
+          <Badge
+            variant="default"
+            className="bg-blue-600/20 text-blue-400 border-blue-600/30 hover:bg-blue-600/30"
+          >
+            Booked
+          </Badge>
+        );
+      case "cancelled":
+        return (
+          <Badge
+            variant="destructive"
+            className="bg-red-600/20 text-red-400 border-red-600/30 hover:bg-red-600/30"
+          >
+            Cancelled
+          </Badge>
+        );
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
   };
 
   const filteredAppointments = appointments.filter((appointment) => {

@@ -49,8 +49,6 @@ const config: Config = {
         },
         accentLight: "#4CAF50",
         accentDark: "#256029",
-        secondary: "#FAFAFA",
-        background: "#000000",
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",

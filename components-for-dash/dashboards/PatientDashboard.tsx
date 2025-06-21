@@ -46,10 +46,12 @@ const PatientDashboard = () => {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-foreground">
             Patient Dashboard
           </h1>
-          <p className="text-gray-600">Welcome back, {patientData.name}</p>
+          <p className="text-muted-foreground">
+            Welcome back, {patientData.name}
+          </p>
         </div>
         <div className="flex items-center space-x-4">
           <Card className="bg-blue-50">
@@ -66,7 +68,7 @@ const PatientDashboard = () => {
       </div>
 
       <Tabs value={tab} onValueChange={handleTabChange} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-6 bg-secondary/50">
           <TabsTrigger value="profile" className="flex items-center space-x-2">
             <User className="h-4 w-4" />
             <span>Profile</span>

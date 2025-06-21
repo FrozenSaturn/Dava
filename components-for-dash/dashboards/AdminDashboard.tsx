@@ -22,8 +22,12 @@ const AdminDashboard = () => {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600">System management and oversight</p>
+          <h1 className="text-3xl font-bold text-foreground">
+            Admin Dashboard
+          </h1>
+          <p className="text-muted-foreground">
+            System management and oversight
+          </p>
         </div>
         <div className="flex items-center space-x-4">
           <Card className="bg-red-50">
@@ -54,7 +58,7 @@ const AdminDashboard = () => {
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-5 bg-secondary/50">
           <TabsTrigger value="roles" className="flex items-center space-x-2">
             <Shield className="h-4 w-4" />
             <span>Role Verification</span>
@@ -90,7 +94,6 @@ const AdminDashboard = () => {
           <RoleVerification />
         </TabsContent>
 
-
         <TabsContent value="appointments">
           <AppointmentManagement />
         </TabsContent>
@@ -98,7 +101,6 @@ const AdminDashboard = () => {
         <TabsContent value="payments">
           <PaymentTracking />
         </TabsContent>
-
       </Tabs>
     </div>
   );

@@ -51,40 +51,6 @@ const contributionAreas = [
     icon: Shield,
     color: "#81C784",
   },
-  {
-    title: "Patient Experience",
-    description:
-      "Design intuitive patient interfaces, appointment booking systems, and medical record management tools.",
-    skills: ["React", "UX Design", "Accessibility", "Patient Journey"],
-    icon: Heart,
-    color: "#66BB6A",
-  },
-  {
-    title: "Doctor Dashboard",
-    description:
-      "Build comprehensive doctor portals, appointment management, and patient communication systems.",
-    skills: [
-      "Next.js",
-      "Real-time Updates",
-      "Calendar Integration",
-      "Communication Tools",
-    ],
-    icon: Users,
-    color: "#A5D6A7",
-  },
-  {
-    title: "Medical Records System",
-    description:
-      "Develop secure, scalable systems for storing and managing digital medical records and patient data.",
-    skills: [
-      "Database Design",
-      "File Management",
-      "Data Migration",
-      "Backup Systems",
-    ],
-    icon: Database,
-    color: "#388E3C",
-  },
 ];
 
 const sectionVariants = {
