@@ -1,108 +1,120 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Shield, Search, Check, X, FileText, User } from 'lucide-react';
+import { Shield, Search, Check, X, FileText, User, Loader2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { CONTRACT_ABI2, CONTRACT_ADDRESS2 } from '@/lib/contracts2'
+import { useReadContract, useAccount } from 'wagmi'
+
+// This interface is based on what the component needs, mapped from the 'profiles' table
+interface RoleRequest {
+  id: string; // profile.id
+  userId: string; // profile.id
+  name: string;
+  walletAddress: string | null;
+  currentRole: string; // Will be hardcoded to 'patient' for display
+  requestedRole: 'doctor';
+  specialization: string | null;
+  consultation_fee: number | null;
+  bio: string | null;
+  requestDate: string;
+  status: 'pending'; // All fetched requests are pending
+  documents: string[]; // This is not in the db, will be an empty array
+}
 
 const RoleVerification = () => {
+  const [requests, setRequests] = useState<RoleRequest[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('pending');
+  const supabase = createClient();
 
-  // TODO: Fetch role requests from Supabase
-  const roleRequests = [
-    {
-      id: 'RR001',
-      userId: 'USR123',
-      name: 'Dr. Michael Chen',
-      email: 'michael.chen@email.com',
-      currentRole: 'patient',
-      requestedRole: 'doctor',
-      specialty: 'Neurology',
-      licenseNumber: 'MD-789012',
-      hospital: 'Metro Medical Center',
-      requestDate: '2024-01-18',
-      status: 'pending',
-      documents: ['license.pdf', 'degree.pdf']
-    },
-    {
-      id: 'RR002',
-      userId: 'USR124',
-      name: 'City General Hospital',
-      email: 'admin@citygeneral.com',
-      currentRole: 'patient',
-      requestedRole: 'hospital',
-      registrationNumber: 'HOSP-456789',
-      address: '123 Medical Center Dr, City, State',
-      requestDate: '2024-01-17',
-      status: 'pending',
-      documents: ['registration.pdf', 'accreditation.pdf']
-    },
-    {
-      id: 'RR003',
-      userId: 'USR125',
-      name: 'Dr. Emily Rodriguez',
-      email: 'emily.rodriguez@email.com',
-      currentRole: 'patient',
-      requestedRole: 'doctor',
-      specialty: 'Dermatology',
-      licenseNumber: 'MD-345678',
-      hospital: 'Sunshine Clinic',
-      requestDate: '2024-01-16',
-      status: 'approved',
-      approvedDate: '2024-01-19',
-      documents: ['license.pdf', 'certification.pdf']
+  useEffect(() => {
+    const fetchRoleRequests = async () => {
+      setLoading(true);
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('role', 'doctor')
+        .eq('verified', false);
+
+      if (error) {
+        toast({
+          title: "Error fetching requests",
+          description: error.message,
+          variant: "destructive",
+        });
+        console.error("Error fetching role requests:", error);
+      } else if (profiles) {
+        const mappedRequests: RoleRequest[] = profiles.map(profile => ({
+          id: profile.id,
+          userId: profile.id,
+          name: profile.full_name || 'Unnamed User',
+          walletAddress: profile.walletAddress,
+          currentRole: 'patient',
+          requestedRole: 'doctor',
+          specialization: profile.specialization,
+          consultation_fee: profile.consultation_fee,
+          bio: profile.bio,
+          requestDate: new Date(profile.updated_at).toLocaleDateString(),
+          status: 'pending',
+          documents: [], // Placeholder as this is not in the profiles table
+        }));
+        setRequests(mappedRequests);
+      }
+      setLoading(false);
+    };
+
+    fetchRoleRequests();
+  }, [supabase]);
+
+  const handleApprove = async (userId: string) => {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ verified: true, updated_at: new Date().toISOString() })
+      .eq('id', userId);
+
+    if (error) {
+      toast({
+        title: "Approval Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Role Approved",
+        description: `User has been verified as a doctor.`,
+      });
+      setRequests(prev => prev.filter(req => req.userId !== userId));
     }
-  ];
-
-  const handleApprove = async (requestId: string, userId: string, requestedRole: string) => {
-    // TODO: Update user role in Supabase and blockchain
-    // 1. Update user role in database
-    // const { error: dbError } = await supabase
-    //   .from('users')
-    //   .update({ role: requestedRole })
-    //   .eq('id', userId);
-
-    // 2. Update role request status
-    // const { error: requestError } = await supabase
-    //   .from('role_requests')
-    //   .update({ 
-    //     status: 'approved',
-    //     approved_date: new Date().toISOString(),
-    //     approved_by: admin.id
-    //   })
-    //   .eq('id', requestId);
-
-    // 3. Trigger blockchain role update if needed
-    // await updateRoleOnChain(userId, requestedRole);
-
-    toast({
-      title: "Role Approved",
-      description: `User role has been updated to ${requestedRole}.`,
-    });
   };
 
-  const handleReject = async (requestId: string, reason = '') => {
-    // TODO: Update role request status in Supabase
-    // const { error } = await supabase
-    //   .from('role_requests')
-    //   .update({ 
-    //     status: 'rejected',
-    //     rejected_date: new Date().toISOString(),
-    //     rejection_reason: reason,
-    //     rejected_by: admin.id
-    //   })
-    //   .eq('id', requestId);
+  const handleReject = async (userId: string) => {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ role: 'patient', verified: false, specialization: null, consultation_fee: null, bio: null, updated_at: new Date().toISOString() })
+      .eq('id', userId);
 
-    toast({
-      title: "Role Request Rejected",
-      description: "The role request has been rejected.",
-      variant: "destructive"
-    });
+    if (error) {
+      toast({
+        title: "Rejection Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Role Request Rejected",
+        description: "The user's role has been reverted to patient.",
+        variant: "destructive"
+      });
+      setRequests(prev => prev.filter(req => req.userId !== userId));
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -111,7 +123,7 @@ const RoleVerification = () => {
       'approved': { label: 'Approved', variant: 'default' },
       'rejected': { label: 'Rejected', variant: 'secondary' }
     };
-    
+
     const config = statusConfig[status as keyof typeof statusConfig] || { label: status, variant: 'secondary' };
     return <Badge variant={config.variant as any}>{config.label}</Badge>;
   };
@@ -121,19 +133,28 @@ const RoleVerification = () => {
       'doctor': { label: 'Doctor', variant: 'default' },
       'hospital': { label: 'Hospital', variant: 'secondary' }
     };
-    
+
     const config = roleConfig[role as keyof typeof roleConfig] || { label: role, variant: 'outline' };
     return <Badge variant={config.variant as any}>{config.label}</Badge>;
   };
 
-  const filteredRequests = roleRequests.filter(request => {
+  const filteredRequests = requests.filter(request => {
     const matchesSearch = request.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         request.email.toLowerCase().includes(searchTerm.toLowerCase());
+      (request.walletAddress && request.walletAddress.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesRole = roleFilter === 'all' || request.requestedRole === roleFilter;
-    const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
-    
+    const matchesStatus = statusFilter === 'all' || request.status === 'pending';
+
     return matchesSearch && matchesRole && matchesStatus;
   });
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-40">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Loading Requests...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -149,26 +170,25 @@ const RoleVerification = () => {
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Search by name or email..."
+                placeholder="Search by name or wallet address..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
               />
             </div>
             <div>
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
+              <Select value={roleFilter} onValueChange={setRoleFilter} disabled>
                 <SelectTrigger>
                   <SelectValue placeholder="Filter by role" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Roles</SelectItem>
                   <SelectItem value="doctor">Doctor</SelectItem>
-                  <SelectItem value="hospital">Hospital</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select value={statusFilter} onValueChange={setStatusFilter} disabled>
                 <SelectTrigger>
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
@@ -185,7 +205,7 @@ const RoleVerification = () => {
       </Card>
 
       <div className="space-y-4">
-        {filteredRequests.map(request => (
+        {filteredRequests.map((request: RoleRequest) => (
           <Card key={request.id} className="hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
@@ -195,82 +215,60 @@ const RoleVerification = () => {
                     {getRoleBadge(request.requestedRole)}
                     {getStatusBadge(request.status)}
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div className="space-y-2 text-sm">
-                      <p><strong>Email:</strong> {request.email}</p>
+                      <p><strong>Wallet Address:</strong> {request.walletAddress || 'N/A'}</p>
                       <p><strong>Current Role:</strong> {request.currentRole}</p>
                       <p><strong>Request Date:</strong> {request.requestDate}</p>
-                      {request.approvedDate && (
-                        <p><strong>Approved:</strong> {request.approvedDate}</p>
-                      )}
                     </div>
-                    
+
                     <div className="space-y-2 text-sm">
-                      {request.requestedRole === 'doctor' && (
-                        <>
-                          <p><strong>Specialty:</strong> {request.specialty}</p>
-                          <p><strong>License:</strong> {request.licenseNumber}</p>
-                          <p><strong>Hospital:</strong> {request.hospital}</p>
-                        </>
-                      )}
-                      {request.requestedRole === 'hospital' && (
-                        <>
-                          <p><strong>Registration:</strong> {request.registrationNumber}</p>
-                          <p><strong>Address:</strong> {request.address}</p>
-                        </>
-                      )}
+                      <>
+                        <p><strong>Specialization:</strong> {request.specialization || 'N/A'}</p>
+                        <p><strong>Consultation Fee:</strong> ${request.consultation_fee ? request.consultation_fee.toFixed(2) : 'N/A'}</p>
+                        <p><strong>Bio:</strong> {request.bio || 'N/A'}</p>
+                      </>
                       <div>
                         <strong>Documents:</strong>
                         <div className="flex flex-wrap gap-2 mt-1">
-                          {request.documents.map((doc, index) => (
+                          {request.documents.length > 0 ? request.documents.map((doc, index) => (
                             <Badge key={index} variant="outline" className="flex items-center space-x-1">
                               <FileText className="h-3 w-3" />
                               <span>{doc}</span>
                             </Badge>
-                          ))}
+                          )) : <span className='text-gray-500 text-xs'>No documents</span>}
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                
+
                 {request.status === 'pending' && (
                   <div className="ml-6 space-y-2">
-                    <Button 
-                      onClick={() => handleApprove(request.id, request.userId, request.requestedRole)}
+                    <Button
+                      onClick={() => handleApprove(request.userId)}
                       className="w-full bg-green-600 hover:bg-green-700"
                     >
                       <Check className="h-4 w-4 mr-2" />
                       Approve
                     </Button>
-                    <Button 
+                    <Button
                       variant="destructive"
-                      onClick={() => handleReject(request.id)}
+                      onClick={() => handleReject(request.userId)}
                       className="w-full"
                     >
                       <X className="h-4 w-4 mr-2" />
                       Reject
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       className="w-full"
+                      disabled
                     >
                       <FileText className="h-4 w-4 mr-2" />
                       Review Docs
-                    </Button>
-                  </div>
-                )}
-                
-                {request.status !== 'pending' && (
-                  <div className="ml-6">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                    >
-                      <User className="h-4 w-4 mr-2" />
-                      View Profile
                     </Button>
                   </div>
                 )}
@@ -284,8 +282,8 @@ const RoleVerification = () => {
         <Card>
           <CardContent className="p-8 text-center">
             <Shield className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No role requests found</h3>
-            <p className="text-gray-600">Try adjusting your search or filter criteria</p>
+            <h3 className="text-lg font-semibold mb-2">No pending role requests found</h3>
+            <p className="text-gray-600">All doctor verification requests have been processed.</p>
           </CardContent>
         </Card>
       )}

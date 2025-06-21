@@ -4,18 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-// import Form from "next/form";
+import Image from "next/image";
 
 export default function LoginPage() {
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="flex flex-col gap-4 p-6 md:p-10">
+      <div className="flex flex-col gap-4 p-6 md:p-10 bg-gradient-to-l from-[#022B16] via-30% via-black to-black">
         <div className="flex justify-center gap-2 md:justify-start">
           <a href="#" className="flex items-center gap-2 font-medium">
-            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <LayoutDashboard className="size-4" />
+            <div className="flex h-6 w-6 items-center justify-center rounded-md text-primary-foreground">
+              <Image src="/logomain.png" alt="Logo" width={24} height={24} />
             </div>
-            V4 Inc.
+            DAVA Inc.
           </a>
         </div>
         <div className="flex flex-1 items-center justify-center">
@@ -24,7 +24,7 @@ export default function LoginPage() {
             <div className={cn("flex flex-col gap-6")}>
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">
-                  SignUp your account for V4
+                  SignUp your account for DAVA
                 </h1>
                 <p className="text-muted-foreground text-sm text-balance">
                   Enter your email below to Signup
@@ -66,11 +66,13 @@ export default function LoginPage() {
       </div>
       <div className="relative hidden bg-muted lg:block">
         <img
-          src="https://i.pinimg.com/736x/1c/3f/ad/1c3fadca4d5a2a1e5780ec76d6c758ec.jpg"
+          src="/login.png"
           alt="Image"
           className="absolute inset-0 h-full w-full object-cover "
+          width={100}
+          height={100}
         />
       </div>
-    </div>
-  );
+  </div>
+ );
 }
