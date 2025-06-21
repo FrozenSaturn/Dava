@@ -168,14 +168,43 @@ export function DiagnosisSubmission() {
       return;
     }
 
-    const txHash = await writeContractAsync({
-      address: CONTRACT_ADDRESS,
-      abi: CONTRACT_ABI,
-      functionName: "mintNFT",
-      args: [appointmentDetails.patient_wallet_address, tokenUri],
-    });
+    setIsTransferring(true);
+    try {
+      const txHash = await writeContractAsync({
+        address: CONTRACT_ADDRESS,
+        abi: CONTRACT_ABI,
+        functionName: "mintNFT",
+        args: [appointmentDetails.patient_wallet_address, tokenUri],
+      });
 
-    console.log("Mint transaction hash:", txHash);
+      console.log("Mint transaction hash:", txHash);
+
+      const supabase = createClient();
+      const newRecord = {
+        appointment_id: selectedAppointment,
+        patient_wallet_address: appointmentDetails.patient_wallet_address,
+        doctor_wallet_address: appointmentDetails.doctor_wallet_address,
+        diagnosis: diagnosis,
+        treatment: treatmentPlan,
+        token_uri: tokenUri,
+      };
+
+      const { error } = await supabase
+        .from("medical_records_nfts")
+        .insert([newRecord]);
+
+      if (error) {
+        throw error;
+      }
+
+      alert("Record transferred to admin successfully!");
+      // Optionally, reset the form here
+    } catch (error) {
+      console.error("Error transferring record to admin:", error);
+      alert("Failed to transfer record. Please try again.");
+    } finally {
+      setIsTransferring(false);
+    }
   };
 
   return (
