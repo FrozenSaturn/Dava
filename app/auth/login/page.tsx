@@ -11,9 +11,9 @@ import Image from "next/image";
 export default function LoginPage() {
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="flex flex-col gap-4 p-6 md:p-10">
+      <div className="flex flex-col gap-4 p-6 md:p-10 bg-gradient-to-l from-[#022B16] via-30% via-black to-black">
         <div className="flex justify-center gap-2 md:justify-start">
-          <a href="#" className="flex items-center gap-2 font-medium">
+          <a href="#" className="flex items-center gap-2 font-medium text-white">
             <div className="flex h-6 w-6 items-center justify-center rounded-md text-primary-foreground">
               <Image src="/logomain.png" alt="Logo" width={24} height={24} />
             </div>
@@ -25,8 +25,8 @@ export default function LoginPage() {
             {/* Login Page */}
             <div className={cn("flex flex-col gap-6")}>
               <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold">Login to your account</h1>
-                <p className="text-muted-foreground text-sm text-balance">
+                <h1 className="text-2xl font-bold text-white">Login to your account</h1>
+                <p className="text-gray-300 text-sm text-balance">
                   Enter your email below to login to your account
                 </p>
               </div>
@@ -35,12 +35,18 @@ export default function LoginPage() {
                 <form>
                   <div className="flex flex-col gap-3">
                     <div className="grid gap-3">
-                      <Label htmlFor="email">Email</Label>
-                      <Input id="email" name="email" type="email" required />
+                      <Label htmlFor="email" className="text-gray-200">Email</Label>
+                      <Input 
+                        id="email" 
+                        name="email" 
+                        type="email" 
+                        required 
+                        className="bg-black/40 border-gray-600 text-white placeholder:text-gray-400 focus:border-emerald-500"
+                      />
                     </div>
                     <div className="grid gap-3">
                       <div className="flex items-center">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password" className="text-gray-200">Password</Label>
                         {/* <a
                           href="#"
                           className="ml-auto text-sm underline-offset-4 hover:underline"
@@ -53,10 +59,14 @@ export default function LoginPage() {
                         name="password"
                         type="password"
                         required
+                        className="bg-black/40 border-gray-600 text-white placeholder:text-gray-400 focus:border-emerald-500"
                       />
                     </div>
 
-                    <Button formAction={login} className="w-full">
+                    <Button 
+                      formAction={login} 
+                      className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white"
+                    >
                       Login
                     </Button>
                     {/* <Button formAction={signup} className="w-full">
@@ -65,23 +75,23 @@ export default function LoginPage() {
                   </div>
                 </form>
 
-                <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-                  <span className="bg-background text-muted-foreground relative z-10 px-2">
+                <div className="after:border-gray-600 relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+                  <span className="bg-gradient-to-br from-emerald-900/20 via-green-900/10 to-black text-gray-300 relative z-10 px-2">
                     Or continue with
                   </span>
                 </div>
 
                 {/* Google login with its own form */}
-                <LoginWithGoogle className="w-full" />
+                <LoginWithGoogle className="w-full bg-white/10 hover:bg-white/20 text-white border-gray-600" />
               </div>
 
               {/* Redirecting to Sign up Page */}
 
-              <div className="text-center text-sm">
+              <div className="text-center text-sm text-gray-300">
                 Don&apos;t have an account?{" "}
                 <Link
                   href="/auth/signup"
-                  className="underline underline-offset-4"
+                  className="underline underline-offset-4 text-emerald-400 hover:text-emerald-300"
                 >
                   Sign up
                 </Link>
@@ -95,7 +105,7 @@ export default function LoginPage() {
         <Image
           src="/login.png"
           alt="Image"
-          className="absolute inset-0 h-full w-full object-cover "
+          className="absolute inset-0 h-full w-full object-cover"
           width={100}
           height={100}
         />
