@@ -2,7 +2,6 @@ import React from "react";
 import { Shield, FileText, Award } from "lucide-react";
 import RoleRequestsTile from "../admin/tiles/RoleRequestsTile";
 import MintManageAppointmentsTile from "../admin/tiles/MintManageAppointmentsTile";
-import NFTHistoryTile from "../admin/tiles/NFTHistoryTile";
 
 const AdminDashboard = () => {
   // TODO: Fetch admin statistics from Supabase
@@ -27,11 +26,6 @@ const AdminDashboard = () => {
         {/* Mint & Manage Appointments Tile - Spans 2 columns */}
         <div className="md:col-span-2 lg:col-span-2">
           <MintManageAppointmentsTile />
-        </div>
-
-        {/* NFT History Tile - Spans full width on mobile, 1 column on larger screens */}
-        <div className="md:col-span-2 lg:col-span-1">
-          <NFTHistoryTile />
         </div>
       </div>
     </div>
