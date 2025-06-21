@@ -3,8 +3,7 @@ import { User, Calendar, FileText, History } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DoctorProfile from "../doctor/DoctorProfile";
 import AppointmentQueue from "../doctor/AppointmentQueue";
-import DiagnosisSubmission from "../doctor/DiagnosisSubmission";
-import TreatmentHistory from "../doctor/TreatmentHistory";
+import { DiagnosisSubmission } from "../doctor/DiagnosisSubmission";
 
 const DoctorDashboard = () => {
   const [activeTab, setActiveTab] = useState("profile");
@@ -61,7 +60,6 @@ const DoctorDashboard = () => {
         </TabsContent>
 
         <TabsContent value="history">
-          <TreatmentHistory />
         </TabsContent>
       </Tabs>
     </div>

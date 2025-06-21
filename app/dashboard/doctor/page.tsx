@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DoctorProfile from "../../../components-for-dash/doctor/DoctorProfile";
 import AppointmentQueue from "../../../components-for-dash/doctor/AppointmentQueue";
 import { DiagnosisSubmission } from "../../../components-for-dash/doctor/DiagnosisSubmission";
-import TreatmentHistory from "../../../components-for-dash/doctor/TreatmentHistory";
 
 const DoctorDashboard = () => {
   const router = useRouter();
@@ -36,7 +35,7 @@ const DoctorDashboard = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-6 min-h-screen">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">
@@ -51,9 +50,9 @@ const DoctorDashboard = () => {
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
-        className="space-y-6"
+        className="space-y-6 flex-1"
       >
-        <TabsList className="grid w-full grid-cols-4 bg-secondary/50">
+        <TabsList className="grid w-full grid-cols-3 bg-secondary/50">
           <TabsTrigger value="profile" className="flex items-center space-x-2">
             <User className="h-4 w-4" />
             <span>Profile</span>
@@ -69,24 +68,22 @@ const DoctorDashboard = () => {
             <FileText className="h-4 w-4" />
             <span>Submit Diagnosis</span>
           </TabsTrigger>
-          <TabsTrigger value="history" className="flex items-center space-x-2">
-            <History className="h-4 w-4" />
-            <span>Treatment History</span>
-          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="profile">
-          <DoctorProfile />
-        </TabsContent>
-        <TabsContent value="queue">
-          <AppointmentQueue />
-        </TabsContent>
-        <TabsContent value="diagnosis">
-          <DiagnosisSubmission />
-        </TabsContent>
-        <TabsContent value="history">
-          <TreatmentHistory />
-        </TabsContent>
+        {/* Equal spacing between tab content areas */}
+        <div className="space-y-6">
+          <TabsContent value="profile" className="mt-6">
+            <DoctorProfile />
+          </TabsContent>
+
+          <TabsContent value="queue" className="mt-6">
+            <AppointmentQueue />
+          </TabsContent>
+
+          <TabsContent value="diagnosis" className="mt-6">
+            <DiagnosisSubmission />
+          </TabsContent>
+        </div>
       </Tabs>
     </div>
   );
