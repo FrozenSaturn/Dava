@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Shield, Users, Calendar, CreditCard, Bell } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,24 +12,17 @@ import AdminProfileBento from "../../../components-for-dash/admin/AdminProfileBe
 const Page = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const [activeTab, setActiveTab] = useState("profile");
 
   // Determine the active tab from the path
-  let activeTab = "profile";
-  if (pathname.endsWith("/roles")) activeTab = "roles";
-  else if (pathname.endsWith("/appointments")) activeTab = "appointments";
-  else if (pathname.endsWith("/payments")) activeTab = "payments";
+  let initialTab = "profile";
+  if (pathname.endsWith("/roles")) initialTab = "roles";
+  else if (pathname.endsWith("/appointments")) initialTab = "appointments";
+  else if (pathname.endsWith("/payments")) initialTab = "payments";
 
-  // Handle tab change
+  // Handle tab change without navigation
   const handleTabChange = (value: string) => {
-    if (value === "roles") {
-      router.push("/dashboard/admin/roles");
-    } else if (value === "appointments") {
-      router.push("/dashboard/admin/appointments");
-    } else if (value === "payments") {
-      router.push("/dashboard/admin/payments");
-    } else {
-      router.push("/dashboard/admin");
-    }
+    setActiveTab(value);
   };
 
   // TODO: Fetch admin statistics from Supabase
@@ -45,8 +38,12 @@ const Page = () => {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600">System management and oversight</p>
+          <h1 className="text-3xl font-bold text-foreground">
+            Admin Dashboard
+          </h1>
+          <p className="text-muted-foreground">
+            System management and oversight
+          </p>
         </div>
         <div className="flex items-center space-x-4">
           <Card className="bg-red-50">
@@ -77,7 +74,7 @@ const Page = () => {
         onValueChange={handleTabChange}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-4 bg-secondary/50">
           <TabsTrigger value="profile" className="flex items-center space-x-2">
             <Users className="h-4 w-4" />
             <span>Profile</span>
@@ -102,11 +99,15 @@ const Page = () => {
         <TabsContent value="profile">
           <AdminProfileBento />
         </TabsContent>
-        <TabsContent value="roles">{/* handled by /roles */}</TabsContent>
-        <TabsContent value="appointments">
-          {/* handled by /appointments */}
+        <TabsContent value="roles">
+          <RoleVerification />
         </TabsContent>
-        <TabsContent value="payments">{/* handled by /payments */}</TabsContent>
+        <TabsContent value="appointments">
+          <AppointmentManagement />
+        </TabsContent>
+        <TabsContent value="payments">
+          <PaymentTracking />
+        </TabsContent>
       </Tabs>
     </div>
   );

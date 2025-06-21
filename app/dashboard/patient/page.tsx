@@ -15,33 +15,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PatientProfile from "../../../components-for-dash/patient/PatientProfile";
 import DoctorSearch from "../../../components-for-dash/patient/DoctorSearch";
+import AppointmentStatus from "../../../components-for-dash/patient/AppointmentStatus";
+import TreatmentPayment from "../../../components-for-dash/patient/TreatmentPayment";
+import NFTViewer from "../../../components-for-dash/patient/NFTViewer";
 import { useRouter, usePathname } from "next/navigation";
+import MedicalRecordUpload from "@/components-for-dash/patient/MedicalRecordUpload";
 
 const PatientDashboard = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const [activeTab, setActiveTab] = useState("profile");
 
   // Determine the active tab from the path
-  let activeTab = "profile";
-  if (pathname.endsWith("/appointment")) activeTab = "appointments";
-  else if (pathname.endsWith("/records")) activeTab = "records";
-  else if (pathname.endsWith("/payments")) activeTab = "payments";
-  else if (pathname.endsWith("/nfts")) activeTab = "nfts";
+  let initialTab = "profile";
+  if (pathname.endsWith("/appointment")) initialTab = "appointments";
+  else if (pathname.endsWith("/records")) initialTab = "records";
+  else if (pathname.endsWith("/payments")) initialTab = "payments";
+  else if (pathname.endsWith("/nfts")) initialTab = "nfts";
   // Add more if you want to support other tabs as routes
 
-  // Handle tab change
+  // Handle tab change without navigation
   const handleTabChange = (value: string) => {
-    if (value === "appointments") {
-      router.push("/dashboard/patient/appointment");
-    } else if (value === "records") {
-      router.push("/dashboard/patient/records");
-    } else if (value === "payments") {
-      router.push("/dashboard/patient/payments");
-    } else if (value === "nfts") {
-      router.push("/dashboard/patient/nfts");
-    } else {
-      router.push("/dashboard/patient");
-    }
+    setActiveTab(value);
   };
 
   // TODO: Fetch patient data from Supabase
@@ -142,19 +137,19 @@ const PatientDashboard = () => {
         </TabsContent>
 
         <TabsContent value="appointments" className="mt-6">
-          {/* handled by /appointment */}
+          <AppointmentStatus />
         </TabsContent>
 
         <TabsContent value="records" className="mt-6">
-          {/* handled by /records */}
+          <MedicalRecordUpload />
         </TabsContent>
 
         <TabsContent value="payments" className="mt-6">
-          {/* handled by /payments */}
+          <TreatmentPayment />
         </TabsContent>
 
         <TabsContent value="nfts" className="mt-6">
-          {/* handled by /nfts */}
+          <NFTViewer />
         </TabsContent>
       </Tabs>
     </div>

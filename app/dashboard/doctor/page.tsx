@@ -1,32 +1,28 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { User, Calendar, FileText, History } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DoctorProfile from "../../../components-for-dash/doctor/DoctorProfile";
+import AppointmentQueue from "../../../components-for-dash/doctor/AppointmentQueue";
+import { DiagnosisSubmission } from "../../../components-for-dash/doctor/DiagnosisSubmission";
+import TreatmentHistory from "../../../components-for-dash/doctor/TreatmentHistory";
 
 const DoctorDashboard = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const [activeTab, setActiveTab] = useState("profile");
 
   // Determine the active tab from the path
-  let activeTab = "profile";
-  if (pathname.endsWith("/queue")) activeTab = "queue";
-  else if (pathname.endsWith("/diagnosis")) activeTab = "diagnosis";
-  else if (pathname.endsWith("/history")) activeTab = "history";
+  let initialTab = "profile";
+  if (pathname.endsWith("/queue")) initialTab = "queue";
+  else if (pathname.endsWith("/diagnosis")) initialTab = "diagnosis";
+  else if (pathname.endsWith("/history")) initialTab = "history";
 
-  // Handle tab change
+  // Handle tab change without navigation
   const handleTabChange = (value: string) => {
-    if (value === "queue") {
-      router.push("/dashboard/doctor/queue");
-    } else if (value === "diagnosis") {
-      router.push("/dashboard/doctor/diagnosis");
-    } else if (value === "history") {
-      router.push("/dashboard/doctor/history");
-    } else {
-      router.push("/dashboard/doctor");
-    }
+    setActiveTab(value);
   };
 
   // TODO: Fetch doctor data from Supabase
@@ -43,8 +39,12 @@ const DoctorDashboard = () => {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Doctor Dashboard</h1>
-          <p className="text-gray-600">Welcome back, {doctorData.name}</p>
+          <h1 className="text-3xl font-bold text-foreground">
+            Doctor Dashboard
+          </h1>
+          <p className="text-muted-foreground">
+            Welcome back, {doctorData.name}
+          </p>
         </div>
         <div className="flex items-center space-x-4">
           <Card className="bg-blue-50">
@@ -75,7 +75,7 @@ const DoctorDashboard = () => {
         onValueChange={handleTabChange}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-4 bg-secondary/50">
           <TabsTrigger value="profile" className="flex items-center space-x-2">
             <User className="h-4 w-4" />
             <span>Profile</span>
@@ -100,11 +100,15 @@ const DoctorDashboard = () => {
         <TabsContent value="profile">
           <DoctorProfile />
         </TabsContent>
-        <TabsContent value="queue">{/* handled by /queue */}</TabsContent>
-        <TabsContent value="diagnosis">
-          {/* handled by /diagnosis */}
+        <TabsContent value="queue">
+          <AppointmentQueue />
         </TabsContent>
-        <TabsContent value="history">{/* handled by /history */}</TabsContent>
+        <TabsContent value="diagnosis">
+          <DiagnosisSubmission />
+        </TabsContent>
+        <TabsContent value="history">
+          <TreatmentHistory />
+        </TabsContent>
       </Tabs>
     </div>
   );
