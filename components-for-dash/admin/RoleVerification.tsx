@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Shield, Search, Check, X, FileText, User, Loader2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { CONTRACT_ABI2, CONTRACT_ADDRESS2 } from '@/lib/contracts2'
-import { useReadContract, useAccount } from 'wagmi'
+import { useReadContract, useAccount, useWriteContract } from 'wagmi'
 
 // This interface is based on what the component needs, mapped from the 'profiles' table
 interface RoleRequest {
@@ -30,10 +30,12 @@ interface RoleRequest {
 const RoleVerification = () => {
   const [requests, setRequests] = useState<RoleRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [processingId, setProcessingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('pending');
   const supabase = createClient();
+  const { writeContractAsync } = useWriteContract();
 
   useEffect(() => {
     const fetchRoleRequests = async () => {
@@ -74,24 +76,61 @@ const RoleVerification = () => {
     fetchRoleRequests();
   }, [supabase]);
 
-  const handleApprove = async (userId: string) => {
-    const { error } = await supabase
-      .from('profiles')
-      .update({ verified: true, updated_at: new Date().toISOString() })
-      .eq('id', userId);
-
-    if (error) {
+  const handleApprove = async (userId: string, walletAddress: string | null) => {
+    if (!walletAddress) {
       toast({
         title: "Approval Failed",
-        description: error.message,
+        description: "User does not have a wallet address to add to the contract.",
         variant: "destructive",
       });
-    } else {
+      return;
+    }
+    setProcessingId(userId);
+    try {
+      // Step 1: Call the smart contract to add the doctor
+      await writeContractAsync({
+        address: CONTRACT_ADDRESS2,
+        abi: CONTRACT_ABI2,
+        functionName: 'addDoctor',
+        args: [walletAddress],
+      });
+
+      toast({
+        title: "Transaction Sent",
+        description: "Adding doctor to the smart contract. Please wait for confirmation.",
+      });
+
+      // Step 2: Update Supabase database to mark as verified
+      const { error: dbError } = await supabase
+        .from('profiles')
+        .update({ verified: true, updated_at: new Date().toISOString() })
+        .eq('id', userId);
+
+      if (dbError) {
+        // Handle case where blockchain succeeded but DB failed
+        toast({
+          title: "Database Update Failed",
+          description: `The user was added on-chain, but the database update failed: ${dbError.message}. Please update manually.`,
+          variant: "destructive",
+        });
+        throw dbError;
+      }
+
       toast({
         title: "Role Approved",
-        description: `User has been verified as a doctor.`,
+        description: `User has been verified as a doctor on-chain and in the database.`,
       });
       setRequests(prev => prev.filter(req => req.userId !== userId));
+
+    } catch (error: any) {
+      console.error("Approval process failed:", error);
+      toast({
+        title: "Approval Failed",
+        description: error.message || "An error occurred during the approval process.",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingId(null);
     }
   };
 
@@ -247,10 +286,15 @@ const RoleVerification = () => {
                 {request.status === 'pending' && (
                   <div className="ml-6 space-y-2">
                     <Button
-                      onClick={() => handleApprove(request.userId)}
+                      onClick={() => handleApprove(request.userId, request.walletAddress)}
                       className="w-full bg-green-600 hover:bg-green-700"
+                      disabled={processingId === request.userId}
                     >
-                      <Check className="h-4 w-4 mr-2" />
+                      {processingId === request.userId ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Check className="h-4 w-4 mr-2" />
+                      )}
                       Approve
                     </Button>
                     <Button

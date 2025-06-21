@@ -23,7 +23,7 @@ export default function Hero() {
             The DAVA Project
           </h1>
           <p className="text-lg text-gray-300 mb-5 font-sf-pro-regular tracking-widest">
-            (not your grandma's healthcare)
+            not your grandma's healthcare...
           </p>
 
           {/* CTA Button */}
