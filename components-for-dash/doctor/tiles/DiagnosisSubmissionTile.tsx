@@ -52,9 +52,6 @@ const DiagnosisSubmissionTile = () => {
               )}
             </div>
             
-            <div className="mt-2 p-2 bg-white rounded text-xs">
-              <strong>Diagnosis:</strong> {recentSubmission.diagnosis}
-            </div>
           </div>
           
           <div className="text-center text-xs text-gray-500">

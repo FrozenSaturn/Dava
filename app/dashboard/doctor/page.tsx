@@ -46,28 +46,6 @@ const DoctorDashboard = () => {
             Welcome back, {doctorData.name}
           </p>
         </div>
-        <div className="flex items-center space-x-4">
-          <Card className="bg-blue-50">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <Calendar className="h-5 w-5 text-blue-600" />
-                <span className="text-sm font-medium">
-                  {doctorData.pendingAppointments} Pending
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-green-50">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <FileText className="h-5 w-5 text-green-600" />
-                <span className="text-sm font-medium">
-                  {doctorData.awaitingDiagnosis} Awaiting Diagnosis
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
 
       <Tabs
